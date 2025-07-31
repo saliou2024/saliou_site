@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographie : Analyse Stratégique de la Commune de Boghal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Energetic & Playful -->
+    <!-- Application Structure Plan: The infographic follows a top-down narrative structure. It starts with a high-level overview (key stats) to grab attention, then dives into the core qualitative analysis (SWOT), followed by specific quantitative deep-dives into key problem areas (Governance, Education). It concludes with the strategic vision. This flow guides the user from the general context to specific details and finally to the proposed solutions, making the complex report digestible in a single, scrollable page. -->
+    <!-- Visualization & Content Choices: 
+        - Key Stats (Population, Area, Electrification): (Goal: Inform) -> Big Numbers & Pictograph (Unicode Icons + HTML/CSS). This provides a quick, impactful snapshot of the commune's scale and a major challenge. No library needed.
+        - Geographical Context: (Goal: Inform) -> Textual description in a dedicated card. A visual map cannot be directly embedded due to technical constraints (no external images/SVG).
+        - SWOT Analysis: (Goal: Organize) -> 2x2 Grid of styled cards (HTML/CSS). This is the clearest way to present the four distinct categories for easy comparison, using icons for quick visual identification. No SVG/Mermaid used.
+        - Governance (Councilor Education): (Goal: Compare) -> Donut Chart (Chart.js). This is the best choice to show the composition of a whole, immediately highlighting the 89% majority with only Quranic education.
+        - Education (TBS & Student/Teacher Ratio): (Goal: Compare) -> Bar Chart (Chart.js). A bar chart is ideal for comparing the current values against a target or norm, visually emphasizing the performance gap.
+        - Strategic Axes: (Goal: Organize) -> Styled cards (HTML/CSS) with icons. This provides a clean, scannable summary of the strategic pillars.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #E5DDC8;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 300px;
+            max-height: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+
+    <style>
+    #map {
+        height: 350px;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        margin-top: 1rem;
+        }
+    </style>
+</head>
+<body class="text-[#004369]">
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+
+        <header class="text-center my-8 md:my-12">
+            <h1 class="text-4xl md:text-6xl font-black uppercase">Commune de Boghal</h1>
+            <p class="text-xl md:text-2xl font-light mt-2">Un diagnostic stratégique pour un développement durable</p>
+        </header>
+
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 text-center mb-12 md:mb-20">
+            <div class="bg-white/70 p-6 rounded-2xl shadow-lg">
+                <p class="text-lg font-medium">Population (2017)</p>
+                <p class="text-5xl font-extrabold text-[#01949A]">18,594</p>
+                <p class="text-sm">habitants</p>
+            </div>
+            <div class="bg-white/70 p-6 rounded-2xl shadow-lg">
+                <p class="text-lg font-medium">Électrification Rurale</p>
+                <p class="text-5xl font-extrabold text-[#DB1F48]">~2%</p>
+                <p class="text-sm">Seulement 1 village sur 51 est connecté</p>
+            </div>
+            <div class="bg-white/70 p-6 rounded-2xl shadow-lg">
+                <p class="text-lg font-medium">Superficie</p>
+                <p class="text-5xl font-extrabold text-[#01949A]">216</p>
+                <p class="text-sm">kilomètres carrés</p>
+            </div>
+        </section>
+
+        <section class="mb-12 md:mb-20">
+    <div class="text-center mb-8">
+        <h2 class="text-3xl md:text-4xl font-bold">Contexte Géographique</h2>
+        <p class="max-w-2xl mx-auto mt-2">La commune de Boghal est située dans le département de Bounkiling, au nord de la région de Sédhiou, en Casamance, au sud du Sénégal. Elle a acquis le statut de commune en 2014, à la faveur de la réforme de l’Acte III de la décentralisation.
+
+        Sa position frontalière avec la Gambie constitue un atout stratégique. En effet, cette proximité est un élément clé de son identité culturelle (présence de flux historiques entre communautés frontalières), mais aussi un levier important pour son potentiel économique, notamment en termes de commerce transfrontalier, de mobilité de la main-d’œuvre et d'opportunités d’échanges agricoles.</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-md text-center">
+        <h3 class="text-xl font-bold mb-4">Localisation de la Commune de Boghal</h3>
+        <div id="map" class="w-full"></div>
+        <p class="text-sm text-gray-600 mt-4">
+            La commune est caractérisée par son climat soudanien et ses écosystèmes variés, incluant des zones agricoles fertiles et des bas-fonds propices à la riziculture.
+        </p>
+    </div>
+</section>
+
+
+
+        <section class="mb-12 md:mb-20">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl md:text-4xl font-bold">Analyse Stratégique SWOT</h2>
+                <p class="max-w-2xl mx-auto mt-2">Un aperçu des facteurs internes et externes qui façonnent l'avenir de la commune, basé sur le diagnostic participatif du Plan de Développement Communal.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-[#01949A]">
+                    <h3 class="text-2xl font-bold mb-3 flex items-center"><span class="text-3xl mr-3">💪</span> Forces</h3>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700">
+                        <li>Fort potentiel agricole, pastoral et forestier.</li>
+                        <li>Ressources en eau abondantes (mares, bassin de rétention).</li>
+                        <li>Dynamisme des organisations communautaires.</li>
+                        <li>Position frontalière stratégique avec la Gambie.</li>
+                        <li>Statut de site religieux avec potentiel touristique.</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-[#DB1F48]">
+                    <h3 class="text-2xl font-bold mb-3 flex items-center"><span class="text-3xl mr-3">😞</span> Faiblesses</h3>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700">
+                        <li>Infrastructures sociales (santé, éducation) insuffisantes.</li>
+                        <li>Très faible accès à l'électricité et enclavement.</li>
+                        <li>Faible niveau de formation des élus locaux.</li>
+                        <li>Absence d'unités de transformation des produits locaux.</li>
+                        <li>Faible mobilisation des recettes propres.</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-[#01949A]">
+                    <h3 class="text-2xl font-bold mb-3 flex items-center"><span class="text-3xl mr-3">🚀</span> Opportunités</h3>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700">
+                        <li>Alignement avec les politiques nationales (PSE).</li>
+                        <li>Existence de nombreux programmes de développement (PUDC, PNDL).</li>
+                        <li>Appui potentiel de partenaires techniques et financiers.</li>
+                        <li>Développement du commerce transfrontalier.</li>
+                        <li>Potentiel de renforcement des capacités des acteurs.</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-[#DB1F48]">
+                    <h3 class="text-2xl font-bold mb-3 flex items-center"><span class="text-3xl mr-3">⚠️</span> Menaces</h3>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700">
+                        <li>Changement climatique et instabilité des pluies.</li>
+                        <li>Dégradation des sols et du couvert végétal.</li>
+                        <li>Concurrence des produits agricoles gambiens.</li>
+                        <li>Exode rural massif des jeunes.</li>
+                        <li>Risques sanitaires transfrontaliers.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-12 md:mb-20">
+             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-xl font-bold mb-4 text-center">Le Défi de la Gouvernance Locale</h3>
+                    <p class="text-sm text-gray-600 text-center mb-4">La capacité de gestion de la commune est un enjeu majeur. Le niveau d'instruction du conseil municipal impacte directement la mise en œuvre du plan de développement.</p>
+                    <div class="chart-container">
+                        <canvas id="governanceChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-xl font-bold mb-4 text-center">Le Capital Humain en Question</h3>
+                    <p class="text-sm text-gray-600 text-center mb-4">Le secteur de l'éducation fait face à des difficultés importantes, avec un taux de scolarisation et des conditions d'encadrement bien en deçà des normes nationales.</p>
+                    <div class="chart-container">
+                        <canvas id="educationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-12 md:mb-20">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl md:text-4xl font-bold">Vision Stratégique 2023</h2>
+                <p class="max-w-2xl mx-auto mt-2">Pour surmonter ces défis, le plan s'articule autour de trois axes prioritaires visant à transformer la commune.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white/80 p-6 rounded-lg text-center shadow-lg">
+                    <p class="text-4xl mb-3">📈</p>
+                    <h3 class="text-xl font-bold">Économie Locale</h3>
+                    <p class="text-gray-700 text-sm mt-1">Promouvoir les secteurs créateurs de richesses : agriculture, élevage et commerce.</p>
+                </div>
+                <div class="bg-white/80 p-6 rounded-lg text-center shadow-lg">
+                    <p class="text-4xl mb-3">🌳</p>
+                    <h3 class="text-xl font-bold">Capital Humain & Naturel</h3>
+                    <p class="text-gray-700 text-sm mt-1">Améliorer l'accès aux services sociaux et gérer durablement les ressources naturelles.</p>
+                </div>
+                <div class="bg-white/80 p-6 rounded-lg text-center shadow-lg">
+                    <p class="text-4xl mb-3">🤝</p>
+                    <h3 class="text-xl font-bold">Gouvernance & Partenariats</h3>
+                    <p class="text-gray-700 text-sm mt-1">Développer une gouvernance transparente et renforcer la coopération.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const governanceCtx = document.getElementById('governanceChart').getContext('2d');
+            new Chart(governanceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Niveau Coranique', 'Autres Niveaux'],
+                    datasets: [{
+                        label: 'Niveau d\'instruction des Conseillers',
+                        data: [89, 11],
+                        backgroundColor: ['#DB1F48', '#01949A'],
+                        borderColor: '#E5DDC8',
+                        borderWidth: 4,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: { size: 14 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                      return label.join(' ');
+                                    } else {
+                                      return label;
+                                    }
+                                },
+                                label: function(context) {
+                                    return `${context.raw}% des conseillers`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const educationCtx = document.getElementById('educationChart').getContext('2d');
+            new Chart(educationCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Taux Brut de Scolarisation', 'Ratio Élèves par Enseignant'],
+                    datasets: [{
+                        label: 'Situation à Boghal',
+                        data: [57.6, 42],
+                        backgroundColor: '#DB1F48',
+                        borderRadius: 4
+                    }, {
+                        label: 'Norme Nationale',
+                        data: [100, 25],
+                        backgroundColor: '#01949A',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 67, 105, 0.1)'
+                            }
+                        },
+                        x: {
+                           grid: {
+                                display: false
+                           }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: { size: 14 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                      return label.join(' ');
+                                    } else {
+                                      return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+    <script>
+        // Coordonnées approximatives de Boghal, Sédhiou, Sénégal
+        const boghalCoords = [13.0, -15.85]; 
+
+        const map = L.map('map').setView(boghalCoords, 10);
+
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, etc.',
+      maxZoom: 20
+    }).addTo(map)
+
+        L.marker(boghalCoords)
+            .addTo(map)
+            .bindPopup("Commune de Boghal")
+            .openPopup();
+    </script>
+
+
+    <section class="mb-12 md:mb-20 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Accès au Rapport Complet</h2>
+        <a href="https://drive.google.com/file/d/1YKRjuLQ7htKPj9Ki0dLQwdCFXqGQtYIm/view?usp=sharing" target="_blank" rel="noopener noreferrer" 
+         class="inline-block bg-[#01949A] hover:bg-[#01777a] text-white font-bold py-3 px-6 rounded-lg shadow-md transition">
+        Consulter le rapport PDF si vous souhaitez en savoir plus sur la commune de Boghal
+        </a>
+    </section>
+
+
+
+
+</body>
+</html>
